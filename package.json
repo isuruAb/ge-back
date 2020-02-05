@@ -4,15 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "nodemon -r dotenv/config app.js",
+    "start": "node -r dotenv/config app.js"
   },
   "author": "Isuru Abeywardana",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.8.11",
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.2",
+    "validator": "^12.2.0"
   }
 }
