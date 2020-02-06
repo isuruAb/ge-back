@@ -1,6 +1,8 @@
 const express = require("express");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
+const jwt = require("jsonwebtoken");
+
 const router = express.Router();
 
 // Signup new user
@@ -28,6 +30,26 @@ router.post("/users/login", async (req, res) => {
     const token = await user.generateAuthToken();
     const { _id, name } = user;
     res.send({ _id, name, token });
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+// Renew token
+router.post("/users/token", auth, async (req, res) => {
+  try {
+    const { user } = req;
+    const { _id, name } = user;
+    const valid_time =
+      Math.floor(Math.random() * process.env.JWT_EXPIRY_TIME_MAX) +
+      +process.env.JWT_EXPIRY_TIME_MIN;
+    const new_token = jwt.sign(
+      { _id: user._id, valid_time },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: 60 * valid_time
+      }
+    );
+    res.send({ _id, name, token: new_token });
   } catch (error) {
     res.status(400).send(error);
   }

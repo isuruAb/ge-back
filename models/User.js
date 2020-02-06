@@ -46,7 +46,16 @@ userSchema.pre("save", async function(next) {
 // Generate an auth token for the user
 userSchema.methods.generateAuthToken = async function() {
   const user = this;
-  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+  const valid_time =
+    Math.floor(Math.random() * process.env.JWT_EXPIRY_TIME_MAX) +
+    +process.env.JWT_EXPIRY_TIME_MIN;
+  const token = jwt.sign(
+    { _id: user._id, valid_time },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: 60 * valid_time
+    }
+  );
   user.tokens = user.tokens.concat({ token });
 
   await user.save();
