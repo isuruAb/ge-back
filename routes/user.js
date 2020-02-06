@@ -1,6 +1,6 @@
 const express = require("express");
 const User = require("../models/User");
-
+const auth = require("../middleware/auth");
 const router = express.Router();
 
 // Signup new user
@@ -14,9 +14,9 @@ router.post("/users", async (req, res) => {
     res.status(400).send(error);
   }
 });
-router.post("/users/login", async (req, res) => {
-  //Login a registered user
 
+//Login a registered user
+router.post("/users/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findByCredentials(email, password);
@@ -26,10 +26,27 @@ router.post("/users/login", async (req, res) => {
         .send({ error: "Login failed! Check authentication credentials" });
     }
     const token = await user.generateAuthToken();
-
-    res.send({ _id: user._id, token });
+    const { _id, name } = user;
+    res.send({ _id, name, token });
   } catch (error) {
     res.status(400).send(error);
+  }
+});
+// Show inner pages after login
+router.get("/users/info", auth, async (req, res) => {
+  const { _id, name, email } = req.user;
+  res.send({ _id, name, email });
+});
+// Log user out of the application
+router.post("/users/logout", auth, async (req, res) => {
+  try {
+    req.user.tokens = req.user.tokens.filter(token => {
+      return token.token != req.token;
+    });
+    await req.user.save();
+    res.status(200).send({ message: "user logout successful" });
+  } catch (error) {
+    res.status(500).send(error);
   }
 });
 
