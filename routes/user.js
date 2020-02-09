@@ -10,8 +10,7 @@ router.post("/users", async (req, res) => {
   try {
     const user = new User(req.body);
     await user.save();
-    const token = await user.generateAuthToken();
-    res.status(201).send({ user, token });
+    res.status(201).send({ _id: user._id, name: user.name, email: user.email });
   } catch (error) {
     res.status(400).send(error);
   }
@@ -22,10 +21,8 @@ router.post("/users/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findByCredentials(email, password);
-    if (!user) {
-      return res
-        .status(401)
-        .send({ error: "Login failed! Check authentication credentials" });
+    if (user && user.error) {
+      return res.status(401).send({ error: user.error });
     }
     const token = await user.generateAuthToken();
     const { _id, name } = user;
@@ -39,9 +36,7 @@ router.post("/users/token", auth, async (req, res) => {
   try {
     const { user } = req;
     const { _id, name } = user;
-    const valid_time =
-      Math.floor(Math.random() * process.env.JWT_EXPIRY_TIME_MAX) +
-      +process.env.JWT_EXPIRY_TIME_MIN;
+    const valid_time = 60 * 24;
     const new_token = jwt.sign(
       { _id: user._id, valid_time },
       process.env.JWT_SECRET,
